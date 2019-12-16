@@ -1,88 +1,74 @@
-var users = {"***": '***'};
+// ユーザのGmail：表示させたい名称
+var users = {"AAAAAAAA@gmail.com":"A",
+             "BBBBBBBB@gmail.com":"B",
+             "CCCCCCCC@gmail.com":"C",
+             "DDDDDDDD@gmail.com":"D"};
 
+// 本当は画像で表示させたいが、IMAGE関数がブランク認定されるため断念
+// var users = {"******": '=IMAGE("******")'};
+
+// イイねボタン
 function pushGood(){
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var objSheet = ss.getActiveSheet();
   var objCell = objSheet.getActiveCell();
- 
-  var range = objSheet.getRange("G" +objCell.getRow() );
-  //Logger.log("範囲 : " +  range.getNumColumns());
+  var ranges = objSheet.getRange("H" + objCell.getRow() + ":" + "S" + objCell.getRow());
+  var values = ranges.getValues();
   
+  // ボタンを押したユーザを取得
   var m = GetUser();
-
-  Logger.log(users[m]);  
-  //objCell.setValue(m);
-  //Logger.log(objCell.isBlank());
   
-  var count=0;
-
-  for(var i = 0; i < 12; i++) {
-    
-    // 一人3いいねまで
-    if (count >= 3){
-      break;
+  var count = 0;
+  try {
+    for(i = 0; i <= values[0].length -1; i++ ){
+      if (count >= 3){
+        break;
+      }
+      if(values[0][i] == null || values[0][i] == "" ){
+        values[0].splice(i, 1,users[m]);
+        break;
+      }
+      else if(values[0][i] === users[m]){
+        count++;
+      }
     }
-    
-    // 空欄だったら名前を持ってくる
-    if (range.offset(0, i).isBlank()){
-      Logger.log(range.offset(0, i).isBlank());
-      range.offset(0, i).setValue(users[m]);
-      break;
-    }
-    else if(range.offset(0, i).getValue() === users[m]){
-      Logger.log(range.offset(0, i).getValue());
-      Logger.log("users[m]＝"+users[m]);
-      count++;
-    }
+    ranges.clearContent().setValues(values);
   }
-    Logger.log(count);
+  catch (e) {
+   result = "エラーの内容:" + e;
+   Logger.log(result);
+  }
 }
 
+// イイね取消ボタン
 function pushNoGood(){
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var objSheet = ss.getActiveSheet();
   var objCell = objSheet.getActiveCell();
-
-// Logger.log("列 : " + objCell.getColumn());
-// Logger.log("行 : " + objCell.getRow());
-
-  var range = objSheet.getRange("S" + objCell.getRow() );
-  //Logger.log("範囲 : " +  range.getNumColumns());
-  var m = GetUser();
-
-  for(var i = 0; i <= 12; i++) {
-    if (range.offset(0, -i).getValue() == users[m]){
-      // Logger.log(range.offset(0, -i).getValue());
-      range.offset(0, -i).setValue("");
-      break;
-    }
-  }
-
-  var ranges = objSheet.getRange("G" + objCell.getRow() + ":" + "R" + objCell.getRow());
-  Logger.log(ranges);
+  var ranges = objSheet.getRange("H" + objCell.getRow() + ":" + "S" + objCell.getRow());
   var values = ranges.getValues();
-
-  Logger.log("範囲 : " + values[0].length);
-  Logger.log(values[0][0]);
-  Logger.log(values[0][values[0].length -1]);
+  // ボタンを押したユーザを取得
+  var m = GetUser();
   
-  for(i = values[0].length - 1; i >= 0; i-- ){
-    Logger.log(i+"は"+values[0][i]);
-    
-    if(values[0][i] == null || values[0][i] == "" ){
-       Logger.log("はいった");
-       values[0].splice(i, 1);
-       values[0].push('');
+  try {
+    for(i = values[0].length - 1; i >= 0; i-- ){
+      if(values[0][i] == users[m] ){
+        values[0].splice(i, 1);
+        values[0].push('');
+        break;
+      }
     }
+    ranges.clearContent().setValues(values);
   }
-  
-  Logger.log(values);
-  ranges.clear().setValues(values);
+  catch (e) {
+   result = "エラーの内容:" + e;
+   Logger.log(result);
+  }
 }
 
+// マクロを実行したユーザーの情報を取得する
 function GetUser() {
   var objUser = Session.getActiveUser();
-  //Browser.msgBox(objUser.getEmail());
   Logger.log(Session.getActiveUser());
   return objUser;
 }
